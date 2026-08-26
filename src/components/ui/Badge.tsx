@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { TrendingDown, TrendingUp } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
+import { formatPercent } from '../../utils/formatters'
 import { cn } from '../../utils/cn'
 
 interface BadgeProps {
@@ -9,6 +11,7 @@ interface BadgeProps {
 }
 
 export function TrendBadge({ value, trend, className }: BadgeProps) {
+  const { locale } = useLanguage()
   const isPositive = trend === 'up'
   const Icon = isPositive ? TrendingUp : TrendingDown
 
@@ -23,7 +26,7 @@ export function TrendBadge({ value, trend, className }: BadgeProps) {
       )}
     >
       <Icon className="h-3 w-3" aria-hidden="true" />
-      {value}%
+      {formatPercent(value, locale)}
     </span>
   )
 }
@@ -45,7 +48,7 @@ export function StatusBadge({ children, tone = 'neutral' }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
         toneStyles[tone],
       )}
     >

@@ -1,7 +1,9 @@
 import { Activity, DollarSign, MousePointerClick, Users } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { statMetrics } from '../../mock/data'
 import type { StatMetric } from '../../types'
+import { formatStatValue } from '../../utils/formatters'
 import { TrendBadge } from '../ui/Badge'
 import { Card } from '../ui/Card'
 import { CardSkeleton } from '../ui/Skeleton'
@@ -21,7 +23,15 @@ const iconStyles = {
   conversion: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
 }
 
+const statLabelKeys: Record<StatMetric['id'], string> = {
+  revenue: 'stats.totalRevenue',
+  users: 'stats.activeUsers',
+  bounce: 'stats.bounceRate',
+  conversion: 'stats.conversionRate',
+}
+
 function StatCard({ metric }: { metric: StatMetric }) {
+  const { locale, t } = useLanguage()
   const Icon = iconMap[metric.icon]
 
   return (
@@ -38,9 +48,9 @@ function StatCard({ metric }: { metric: StatMetric }) {
         <TrendBadge value={metric.change} trend={metric.trend} />
       </div>
       <div className="mt-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{metric.label}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t(statLabelKeys[metric.id])}</p>
         <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          {metric.value}
+          {formatStatValue(metric.rawValue, metric.valueType, locale)}
         </p>
       </div>
     </Card>

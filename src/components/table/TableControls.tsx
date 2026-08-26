@@ -1,4 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
+import { formatNumber } from '../../utils/formatters'
 import { cn } from '../../utils/cn'
 import { Button } from '../ui/Button'
 
@@ -8,7 +10,6 @@ interface TablePaginationProps {
   pageSize: number
   pageSizeOptions: number[]
   totalPages: number
-  pageNumbers: number[]
   startIndex: number
   endIndex: number
   canGoNext: boolean
@@ -45,31 +46,39 @@ export function TablePagination({
   onNext,
   onPrevious,
 }: TablePaginationProps) {
+  const { locale, isRtl, t } = useLanguage()
   const visiblePages = getVisiblePages(page, totalPages)
+  const PreviousIcon = isRtl ? ChevronRight : ChevronLeft
+  const NextIcon = isRtl ? ChevronLeft : ChevronRight
+
+  const formatCount = (value: number) => formatNumber(value, locale)
+  const rangeStart = totalItems === 0 ? 0 : startIndex + 1
 
   return (
     <div className="flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Showing{' '}
+          {t('orders.pagination.showing')}{' '}
           <span className="font-medium text-slate-900 dark:text-slate-100">
-            {totalItems === 0 ? 0 : startIndex + 1}-{endIndex}
+            {formatCount(rangeStart)}-{formatCount(endIndex)}
           </span>{' '}
-          of{' '}
-          <span className="font-medium text-slate-900 dark:text-slate-100">{totalItems}</span>
+          {t('orders.pagination.of')}{' '}
+          <span className="font-medium text-slate-900 dark:text-slate-100">
+            {formatCount(totalItems)}
+          </span>
         </p>
 
         <label className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-          Rows per page
+          {t('orders.pagination.rowsPerPage')}
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
             className="h-9 rounded-lg border bg-white px-2 text-sm text-slate-900 outline-none ring-brand-500 focus:ring-2 dark:bg-slate-900 dark:text-slate-100"
-            aria-label="Rows per page"
+            aria-label={t('orders.pagination.rowsPerPage')}
           >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {formatCount(option)}
               </option>
             ))}
           </select>
@@ -82,9 +91,9 @@ export function TablePagination({
           size="icon"
           onClick={onPrevious}
           disabled={!canGoPrevious}
-          aria-label="Previous page"
+          aria-label={t('orders.pagination.previous')}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <PreviousIcon className="h-4 w-4" />
         </Button>
 
         <div className="hidden items-center gap-1 sm:flex">
@@ -108,7 +117,7 @@ export function TablePagination({
                   )}
                   aria-current={page === pageNumber ? 'page' : undefined}
                 >
-                  {pageNumber}
+                  {formatCount(pageNumber)}
                 </button>
               </span>
             )
@@ -116,7 +125,7 @@ export function TablePagination({
         </div>
 
         <span className="px-2 text-sm text-slate-500 sm:hidden dark:text-slate-400">
-          {page} / {totalPages}
+          {formatCount(page)} / {formatCount(totalPages)}
         </span>
 
         <Button
@@ -124,9 +133,9 @@ export function TablePagination({
           size="icon"
           onClick={onNext}
           disabled={!canGoNext}
-          aria-label="Next page"
+          aria-label={t('orders.pagination.next')}
         >
-          <ChevronRight className="h-4 w-4" />
+          <NextIcon className="h-4 w-4" />
         </Button>
       </div>
     </div>
@@ -157,7 +166,7 @@ export function SortableHeader({
       type="button"
       onClick={() => onSort(sortKey)}
       className={cn(
-        'group inline-flex items-center gap-1 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100',
+        'group inline-flex items-center gap-1 text-start text-xs font-semibold uppercase tracking-wide text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100',
         className,
       )}
     >

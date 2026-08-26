@@ -1,6 +1,6 @@
-# Nexus Admin Dashboard
+# Mohsen Dashboard
 
-A production-ready admin dashboard showcase built with **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**. Designed mobile-first with responsive layout, dark mode, interactive analytics, and a custom data table powered entirely by React hooks.
+A production-ready admin dashboard showcase built with **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**. Designed mobile-first with responsive layout, dark mode, bilingual support (English / Persian), RTL layout, interactive analytics, and a custom data table powered entirely by React hooks.
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
@@ -13,6 +13,7 @@ A production-ready admin dashboard showcase built with **React**, **TypeScript**
 - **Mobile-first responsive design** with collapsible sidebar and backdrop overlay
 - **Desktop sidebar collapse** for compact navigation
 - **Dark / light mode** with React Context and `localStorage` persistence
+- **English & Persian (fa)** with RTL/LTR switching via header toggle
 - **Skeleton loaders** simulating initial data fetch
 - **Empty states** for zero-result search queries
 
@@ -37,6 +38,7 @@ Built with native HTML table elements and Tailwind — no heavy table libraries:
 | Styling | Tailwind CSS v4 (class-based dark mode) |
 | Charts | Recharts 3 |
 | Icons | lucide-react |
+| i18n | Custom React Context + translation files |
 
 ## Project Structure
 
@@ -48,8 +50,9 @@ src/
 │   ├── dashboard/    # StatCards, RevenueTrendChart, CategoryBreakdownChart
 │   ├── table/        # OrdersTable, BatchActionsBar, TableControls
 │   └── views/        # Route-like view components
-├── context/          # ThemeContext, AppContext
+├── context/          # ThemeContext, AppContext, LanguageContext
 ├── hooks/            # useDebounce, usePagination
+├── i18n/             # translations (en, fa)
 ├── types/            # TypeScript interfaces
 ├── mock/             # Mock chart and table data
 └── utils/            # cn helper, formatters
@@ -75,6 +78,8 @@ npm run dev
 
 Open [http://localhost:4317](http://localhost:4317) in your browser.
 
+Use the **FA / EN** toggle in the header to switch between Persian (RTL) and English (LTR).
+
 ### Production Build
 
 ```bash
@@ -90,11 +95,13 @@ npm run lint
 
 ## Architecture Highlights
 
+- **LanguageContext** — manages locale, `dir`/`lang` on `<html>`, and the `t()` translation helper
 - **ThemeContext** — manages dark/light mode with flash-free initialization via inline script in `index.html`
 - **AppContext** — centralizes sidebar state, active navigation view, and loading simulation
 - **useDebounce** — 300ms debounce for search input to avoid excessive re-filtering
 - **usePagination** — memoized slice calculations with safe page bounds
 - **OrdersTable** — composes `useMemo` for filter → sort → paginate pipeline and `useCallback` for action handlers
+- **Charts** — isolated with `chart-ltr` to preserve axis orientation while the page layout mirrors in RTL
 
 ## License
 

@@ -1,6 +1,7 @@
 import {
   BarChart3,
   ChevronLeft,
+  ChevronRight,
   LayoutDashboard,
   PanelLeftClose,
   PanelLeftOpen,
@@ -10,15 +11,16 @@ import {
   X,
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useLanguage } from '../../context/LanguageContext'
 import type { AppView, NavItem } from '../../types'
 import { cn } from '../../utils/cn'
 
 const navItems: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { id: 'orders', label: 'Orders', icon: 'orders' },
-  { id: 'analytics', label: 'Analytics', icon: 'analytics' },
-  { id: 'customers', label: 'Customers', icon: 'customers' },
-  { id: 'settings', label: 'Settings', icon: 'settings' },
+  { id: 'dashboard', icon: 'dashboard' },
+  { id: 'orders', icon: 'orders' },
+  { id: 'analytics', icon: 'analytics' },
+  { id: 'customers', icon: 'customers' },
+  { id: 'settings', icon: 'settings' },
 ]
 
 const iconMap = {
@@ -42,6 +44,7 @@ export function Sidebar({ className }: SidebarProps) {
     closeSidebar,
     toggleSidebarCollapse,
   } = useApp()
+  const { t } = useLanguage()
 
   const handleNavigate = (view: AppView) => {
     setActiveView(view)
@@ -61,8 +64,8 @@ export function Sidebar({ className }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-white transition-all duration-300 ease-in-out dark:bg-slate-950 lg:static lg:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 start-0 z-50 flex flex-col border-e bg-white transition-all duration-300 ease-in-out dark:bg-slate-950 lg:static lg:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
           isSidebarCollapsed ? 'w-[72px]' : 'w-64',
           className,
         )}
@@ -70,12 +73,14 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="flex h-16 items-center justify-between border-b px-4">
           <div className={cn('flex items-center gap-3 overflow-hidden', isSidebarCollapsed && 'justify-center')}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">
-              N
+              {t('brand.logoLetter')}
             </div>
             {!isSidebarCollapsed ? (
               <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nexus Admin</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Portfolio Demo</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {t('brand.dashboard')}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('brand.subtitle')}</p>
               </div>
             ) : null}
           </div>
@@ -84,7 +89,7 @@ export function Sidebar({ className }: SidebarProps) {
             type="button"
             className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800"
             onClick={closeSidebar}
-            aria-label="Close sidebar"
+            aria-label={t('header.closeSidebar')}
           >
             <X className="h-5 w-5" />
           </button>
@@ -94,12 +99,13 @@ export function Sidebar({ className }: SidebarProps) {
           {navItems.map((item) => {
             const Icon = iconMap[item.icon]
             const isActive = activeView === item.id
+            const label = t(`nav.${item.id}`)
 
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => handleNavigate(item.id as AppView)}
+                onClick={() => handleNavigate(item.id)}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
@@ -107,10 +113,10 @@ export function Sidebar({ className }: SidebarProps) {
                     : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900',
                   isSidebarCollapsed && 'justify-center px-2',
                 )}
-                title={isSidebarCollapsed ? item.label : undefined}
+                title={isSidebarCollapsed ? label : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                {!isSidebarCollapsed ? <span>{item.label}</span> : null}
+                {!isSidebarCollapsed ? <span>{label}</span> : null}
               </button>
             )
           })}
@@ -124,14 +130,16 @@ export function Sidebar({ className }: SidebarProps) {
               'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900',
               isSidebarCollapsed && 'justify-center px-2',
             )}
-            aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={
+              isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')
+            }
           >
             {isSidebarCollapsed ? (
-              <PanelLeftOpen className="h-5 w-5" />
+              <PanelLeftOpen className="h-5 w-5 rtl:scale-x-[-1]" />
             ) : (
               <>
-                <PanelLeftClose className="h-5 w-5" />
-                <span>Collapse</span>
+                <PanelLeftClose className="h-5 w-5 rtl:scale-x-[-1]" />
+                <span>{t('nav.collapse')}</span>
               </>
             )}
           </button>
@@ -143,8 +151,11 @@ export function Sidebar({ className }: SidebarProps) {
 
 export function MobileBackButton() {
   const { activeView, setActiveView } = useApp()
+  const { t, isRtl } = useLanguage()
 
   if (activeView === 'dashboard') return null
+
+  const BackIcon = isRtl ? ChevronRight : ChevronLeft
 
   return (
     <button
@@ -152,8 +163,8 @@ export function MobileBackButton() {
       onClick={() => setActiveView('dashboard')}
       className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 lg:hidden dark:hover:text-slate-300"
     >
-      <ChevronLeft className="h-4 w-4" />
-      Back
+      <BackIcon className="h-4 w-4" />
+      {t('header.back')}
     </button>
   )
 }

@@ -8,9 +8,9 @@ import {
   type PieSectorShapeProps,
 } from 'recharts'
 import { useApp } from '../../context/AppContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { useTheme } from '../../context/ThemeContext'
 import { categoryData } from '../../mock/data'
-import type { CategoryDataPoint } from '../../types'
 import { formatCompactNumber } from '../../utils/formatters'
 import { cn } from '../../utils/cn'
 import { Card, CardHeader } from '../ui/Card'
@@ -62,15 +62,16 @@ function renderPieSector(props: PieSectorShapeProps, hoveredIndex: number) {
 interface TooltipPayloadItem {
   name: string
   value: number
-  payload: CategoryDataPoint
 }
 
 interface CategoryTooltipProps {
   active?: boolean
   payload?: TooltipPayloadItem[]
+  formatValue: (value: number) => string
+  unitsSoldLabel: string
 }
 
-function CategoryTooltip({ active, payload }: CategoryTooltipProps) {
+function CategoryTooltip({ active, payload, formatValue, unitsSoldLabel }: CategoryTooltipProps) {
   if (!active || !payload?.length) return null
 
   const item = payload[0]
@@ -79,7 +80,7 @@ function CategoryTooltip({ active, payload }: CategoryTooltipProps) {
     <div className="rounded-xl border bg-white p-3 shadow-lg dark:bg-slate-900">
       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.name}</p>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        {formatCompactNumber(item.value)} units sold
+        {formatValue(item.value)} {unitsSoldLabel}
       </p>
     </div>
   )
@@ -88,15 +89,17 @@ function CategoryTooltip({ active, payload }: CategoryTooltipProps) {
 export function CategoryBreakdownChart() {
   const { isLoading } = useApp()
   const { isDark } = useTheme()
+  const { locale, t } = useLanguage()
   const [hoveredIndex, setHoveredIndex] = useState(0)
 
   const chartData = useMemo(
     () =>
       categoryData.map((item) => ({
         ...item,
+        name: t(`categories.${item.categoryKey}`),
         fill: item.color,
       })),
-    [],
+    [t],
   )
 
   const total = useMemo(
@@ -104,17 +107,19 @@ export function CategoryBreakdownChart() {
     [],
   )
 
+  const formatValue = (value: number) => formatCompactNumber(value, locale)
+
   if (isLoading) return <ChartSkeleton />
 
   return (
     <Card>
       <CardHeader
-        title="Sales by Category"
-        description="Product distribution across top categories"
+        title={t('charts.salesByCategory')}
+        description={t('charts.salesByCategoryDesc')}
       />
 
       <div className="flex flex-col items-center gap-6 lg:flex-row">
-        <div className="h-64 w-full max-w-xs">
+        <div className="chart-ltr h-64 w-full max-w-xs">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -131,23 +136,36 @@ export function CategoryBreakdownChart() {
                 shape={(props) => renderPieSector(props, hoveredIndex)}
                 onMouseEnter={(_, index) => setHoveredIndex(index)}
               />
-              <Tooltip content={<CategoryTooltip />} defaultIndex={0} />
+              <Tooltip
+                content={
+                  <CategoryTooltip
+                    formatValue={formatValue}
+                    unitsSoldLabel={t('charts.unitsSold')}
+                  />
+                }
+                defaultIndex={0}
+                wrapperStyle={{ zIndex: 50 }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         <div className="w-full flex-1 space-y-3">
-          {categoryData.map((item, index) => {
+          {chartData.map((item, index) => {
             const percentage = ((item.value / total) * 100).toFixed(1)
+            const localizedPercent =
+              locale === 'fa'
+                ? `%${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(Number(percentage))}`
+                : `${percentage}%`
 
             return (
               <button
-                key={item.name}
+                key={item.categoryKey}
                 type="button"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onFocus={() => setHoveredIndex(index)}
                 className={cn(
-                  'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors',
+                  'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-start transition-colors',
                   hoveredIndex === index
                     ? 'border-brand-200 bg-brand-50 dark:border-brand-900 dark:bg-brand-950/30'
                     : 'hover:bg-slate-50 dark:hover:bg-slate-900',
@@ -163,7 +181,7 @@ export function CategoryBreakdownChart() {
                     {item.name}
                   </span>
                 </span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">{percentage}%</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{localizedPercent}</span>
               </button>
             )
           })}

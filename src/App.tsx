@@ -1,5 +1,6 @@
 import { useApp } from './context/AppContext'
 import { AppProvider } from './context/AppContext'
+import { LanguageProvider } from './context/LanguageContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import {
@@ -21,19 +22,9 @@ function AppContent() {
       case 'analytics':
         return <AnalyticsView />
       case 'customers':
-        return (
-          <PlaceholderView
-            title="Customers"
-            description="Customer profiles, segments, and lifecycle insights would live here in a full production build."
-          />
-        )
+        return <PlaceholderView view="customers" />
       case 'settings':
-        return (
-          <PlaceholderView
-            title="Settings"
-            description="Workspace preferences, team permissions, and integrations would be configured here."
-          />
-        )
+        return <PlaceholderView view="settings" />
       default:
         return <DashboardView />
     }
@@ -44,11 +35,13 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   )
 }
 

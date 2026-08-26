@@ -9,7 +9,7 @@ import {
 } from 'react'
 import type { Theme } from '../types'
 
-const STORAGE_KEY = 'nexus-theme'
+const STORAGE_KEY = 'mohsen-theme'
 
 interface ThemeContextValue {
   theme: Theme

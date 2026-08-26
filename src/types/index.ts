@@ -1,5 +1,7 @@
 export type Theme = 'light' | 'dark'
 
+export type Locale = 'en' | 'fa'
+
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 
 export interface User {
@@ -21,21 +23,21 @@ export interface Order {
 }
 
 export interface RevenueDataPoint {
-  month: string
+  monthKey: string
   revenue: number
   target: number
 }
 
 export interface CategoryDataPoint {
-  name: string
+  categoryKey: string
   value: number
   color: string
 }
 
 export interface StatMetric {
   id: string
-  label: string
-  value: string
+  rawValue: number
+  valueType: 'currency' | 'number' | 'percent'
   change: number
   trend: 'up' | 'down'
   icon: 'revenue' | 'users' | 'bounce' | 'conversion'
@@ -54,8 +56,7 @@ export interface PaginationState {
 }
 
 export type NavItem = {
-  id: string
-  label: string
+  id: AppView
   icon: 'dashboard' | 'orders' | 'analytics' | 'customers' | 'settings'
 }
 

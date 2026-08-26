@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { useDebounce } from '../../hooks/useDebounce'
 import { usePagination } from '../../hooks/usePagination'
 import { orders as initialOrders } from '../../mock/data'
@@ -21,24 +22,31 @@ const statusToneMap: Record<OrderStatus, 'neutral' | 'success' | 'warning' | 'da
   cancelled: 'danger',
 }
 
-function compareValues(a: Order[keyof Order], b: Order[keyof Order], direction: SortDirection): number {
+function compareValues(
+  a: Order[keyof Order],
+  b: Order[keyof Order],
+  direction: SortDirection,
+  locale: string,
+): number {
   if (typeof a === 'number' && typeof b === 'number') {
     return direction === 'asc' ? a - b : b - a
   }
 
   return direction === 'asc'
-    ? String(a).localeCompare(String(b))
-    : String(b).localeCompare(String(a))
+    ? String(a).localeCompare(String(b), locale)
+    : String(b).localeCompare(String(a), locale)
 }
 
 export function OrdersTable() {
   const { isLoading } = useApp()
+  const { locale, t } = useLanguage()
   const [orders, setOrders] = useState<Order[]>(initialOrders)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: 'date', direction: 'desc' })
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const debouncedSearch = useDebounce(searchQuery, 300)
+  const intlLocale = locale === 'fa' ? 'fa-IR' : 'en-US'
 
   const filteredOrders = useMemo(() => {
     const query = debouncedSearch.trim().toLowerCase()
@@ -48,6 +56,7 @@ export function OrdersTable() {
       const haystack = [
         order.customerName,
         order.email,
+        t(`status.${order.status}`),
         order.status,
         order.product,
         order.id,
@@ -57,15 +66,15 @@ export function OrdersTable() {
 
       return haystack.includes(query)
     })
-  }, [orders, debouncedSearch])
+  }, [orders, debouncedSearch, t])
 
   const sortedOrders = useMemo(() => {
     if (!sortConfig) return filteredOrders
 
     return [...filteredOrders].sort((a, b) =>
-      compareValues(a[sortConfig.key], b[sortConfig.key], sortConfig.direction),
+      compareValues(a[sortConfig.key], b[sortConfig.key], sortConfig.direction, intlLocale),
     )
-  }, [filteredOrders, sortConfig])
+  }, [filteredOrders, sortConfig, intlLocale])
 
   const pagination = usePagination({
     totalItems: sortedOrders.length,
@@ -144,24 +153,21 @@ export function OrdersTable() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'selected-orders.csv'
+    link.download = t('orders.csvFileName')
     link.click()
     URL.revokeObjectURL(url)
-  }, [orders, selectedIds])
+  }, [orders, selectedIds, t])
 
   if (isLoading) return <TableSkeleton />
 
   return (
     <Card padding="none">
       <div className="p-5">
-        <CardHeader
-          title="Orders"
-          description="Search, sort, and manage customer orders with batch actions"
-        />
+        <CardHeader title={t('orders.title')} description={t('orders.description')} />
 
         <div className="space-y-4">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               value={searchQuery}
@@ -169,9 +175,9 @@ export function OrdersTable() {
                 setSearchQuery(event.target.value)
                 pagination.setPage(1)
               }}
-              placeholder="Search by name, email, status, product, or order ID..."
-              className="h-11 w-full rounded-xl border bg-slate-50 pl-10 pr-4 text-sm outline-none ring-brand-500 transition focus:bg-white focus:ring-2 dark:bg-slate-900 dark:focus:bg-slate-950"
-              aria-label="Search orders"
+              placeholder={t('orders.searchPlaceholder')}
+              className="h-11 w-full rounded-xl border bg-slate-50 ps-10 pe-4 text-sm outline-none ring-brand-500 transition focus:bg-white focus:ring-2 dark:bg-slate-900 dark:focus:bg-slate-950"
+              aria-label={t('orders.searchLabel')}
             />
           </div>
 
@@ -186,13 +192,13 @@ export function OrdersTable() {
 
       {sortedOrders.length === 0 ? (
         <EmptyState
-          title="No orders found"
-          description="Try adjusting your search query or clearing filters to see more results."
+          title={t('orders.noResultsTitle')}
+          description={t('orders.noResultsDesc')}
         />
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
+            <table className="min-w-full text-start text-sm">
               <thead className="border-y bg-slate-50 dark:bg-slate-900/60">
                 <tr>
                   <th className="px-5 py-3">
@@ -201,12 +207,12 @@ export function OrdersTable() {
                       checked={allVisibleSelected}
                       onChange={toggleSelectAll}
                       className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-900"
-                      aria-label="Select all visible orders"
+                      aria-label={t('orders.selectAll')}
                     />
                   </th>
                   <th className="px-5 py-3">
                     <SortableHeader
-                      label="Order"
+                      label={t('orders.columns.order')}
                       sortKey="id"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -215,7 +221,7 @@ export function OrdersTable() {
                   </th>
                   <th className="px-5 py-3">
                     <SortableHeader
-                      label="Customer"
+                      label={t('orders.columns.customer')}
                       sortKey="customerName"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -224,7 +230,7 @@ export function OrdersTable() {
                   </th>
                   <th className="hidden px-5 py-3 md:table-cell">
                     <SortableHeader
-                      label="Email"
+                      label={t('orders.columns.email')}
                       sortKey="email"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -233,7 +239,7 @@ export function OrdersTable() {
                   </th>
                   <th className="px-5 py-3">
                     <SortableHeader
-                      label="Status"
+                      label={t('orders.columns.status')}
                       sortKey="status"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -242,7 +248,7 @@ export function OrdersTable() {
                   </th>
                   <th className="px-5 py-3">
                     <SortableHeader
-                      label="Amount"
+                      label={t('orders.columns.amount')}
                       sortKey="amount"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -251,7 +257,7 @@ export function OrdersTable() {
                   </th>
                   <th className="hidden px-5 py-3 lg:table-cell">
                     <SortableHeader
-                      label="Date"
+                      label={t('orders.columns.date')}
                       sortKey="date"
                       activeKey={sortConfig?.key ?? null}
                       direction={sortConfig?.direction ?? 'asc'}
@@ -275,7 +281,7 @@ export function OrdersTable() {
                           checked={isSelected}
                           onChange={() => toggleSelectRow(order.id)}
                           className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-900"
-                          aria-label={`Select order ${order.id}`}
+                          aria-label={t('orders.selectOrder', { id: order.id })}
                         />
                       </td>
                       <td className="px-5 py-4">
@@ -299,14 +305,14 @@ export function OrdersTable() {
                       </td>
                       <td className="px-5 py-4">
                         <StatusBadge tone={statusToneMap[order.status]}>
-                          {getStatusLabel(order.status)}
+                          {getStatusLabel(order.status, t)}
                         </StatusBadge>
                       </td>
                       <td className="px-5 py-4 font-medium text-slate-900 dark:text-slate-100">
-                        {formatCurrency(order.amount)}
+                        {formatCurrency(order.amount, locale)}
                       </td>
                       <td className="hidden px-5 py-4 text-slate-600 lg:table-cell dark:text-slate-300">
-                        {formatDate(order.date)}
+                        {formatDate(order.date, locale)}
                       </td>
                     </tr>
                   )
@@ -322,7 +328,6 @@ export function OrdersTable() {
               pageSize={pagination.pageSize}
               pageSizeOptions={pagination.pageSizeOptions}
               totalPages={pagination.totalPages}
-              pageNumbers={pagination.pageNumbers}
               startIndex={pagination.startIndex}
               endIndex={pagination.endIndex}
               canGoNext={pagination.canGoNext}
