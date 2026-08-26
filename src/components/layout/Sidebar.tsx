@@ -44,12 +44,21 @@ export function Sidebar({ className }: SidebarProps) {
     closeSidebar,
     toggleSidebarCollapse,
   } = useApp()
-  const { t } = useLanguage()
+  const { t, isRtl } = useLanguage()
 
   const handleNavigate = (view: AppView) => {
     setActiveView(view)
     closeSidebar()
   }
+
+  const sidebarWidth = isSidebarCollapsed ? 'w-[72px]' : 'w-64'
+
+  // Slide animation is mobile-only; desktop sidebar stays pinned at inline-start.
+  const mobileTranslate = isSidebarOpen
+    ? 'translate-x-0'
+    : isRtl
+      ? 'max-lg:translate-x-full'
+      : 'max-lg:-translate-x-full'
 
   return (
     <>
@@ -64,9 +73,10 @@ export function Sidebar({ className }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed inset-y-0 start-0 z-50 flex flex-col border-e bg-white transition-all duration-300 ease-in-out dark:bg-slate-950 lg:static lg:translate-x-0',
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
-          isSidebarCollapsed ? 'w-[72px]' : 'w-64',
+          'fixed inset-y-0 start-0 z-50 flex flex-col border-e bg-white transition-all duration-300 ease-in-out dark:bg-slate-950',
+          'lg:translate-x-0',
+          mobileTranslate,
+          sidebarWidth,
           className,
         )}
       >
@@ -167,4 +177,9 @@ export function MobileBackButton() {
       {t('header.back')}
     </button>
   )
+}
+
+export function useSidebarOffsetClass(): string {
+  const { isSidebarCollapsed } = useApp()
+  return isSidebarCollapsed ? 'lg:ms-[72px]' : 'lg:ms-64'
 }
