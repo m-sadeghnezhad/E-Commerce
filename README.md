@@ -1,11 +1,15 @@
 # Mohsen Dashboard
 
-A production-ready admin dashboard showcase built with **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**. Designed mobile-first with responsive layout, dark mode, bilingual support (English / Persian), RTL layout, interactive analytics, and a custom data table powered entirely by React hooks.
+A production-ready admin dashboard portfolio piece built with **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**. Mobile-first, fully responsive, with dark mode, bilingual support (English / Persian), RTL layout, interactive analytics, and a custom data table powered entirely by React hooks.
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Recharts](https://img.shields.io/badge/Recharts-3-8884d8)
+
+## Overview
+
+**Mohsen Dashboard** (داشبورد محسن) is a showcase admin panel demonstrating modern front-end architecture: strict TypeScript, hook-driven state management, accessible UI patterns, and internationalization without heavy third-party table or i18n libraries.
 
 ## Features
 
@@ -13,7 +17,7 @@ A production-ready admin dashboard showcase built with **React**, **TypeScript**
 - **Mobile-first responsive design** with collapsible sidebar and backdrop overlay
 - **Desktop sidebar collapse** for compact navigation
 - **Dark / light mode** with React Context and `localStorage` persistence
-- **English & Persian (fa)** with RTL/LTR switching via header toggle
+- **English & Persian (fa)** with RTL/LTR switching via header **FA / EN** toggle
 - **Skeleton loaders** simulating initial data fetch
 - **Empty states** for zero-result search queries
 
@@ -23,7 +27,7 @@ A production-ready admin dashboard showcase built with **React**, **TypeScript**
 - **Category breakdown chart** — interactive donut chart with legend sync
 
 ### Custom Data Table
-Built with native HTML table elements and Tailwind — no heavy table libraries:
+Built with native HTML table elements and Tailwind — no TanStack Table or similar:
 - Debounced global search across multiple fields
 - Multi-column sorting (asc/desc toggle)
 - Custom pagination with page numbers and rows-per-page selector
@@ -102,6 +106,11 @@ npm run lint
 - **usePagination** — memoized slice calculations with safe page bounds
 - **OrdersTable** — composes `useMemo` for filter → sort → paginate pipeline and `useCallback` for action handlers
 - **Charts** — isolated with `chart-ltr` to preserve axis orientation while the page layout mirrors in RTL
+- **Sidebar** — logical `start-0` positioning with mobile-only slide transforms and `lg:ms-*` content offset for RTL/LTR
+
+## Author
+
+**Mohsen** — Admin dashboard portfolio project.
 
 ## License
 
